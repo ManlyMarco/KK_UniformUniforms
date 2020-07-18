@@ -2,7 +2,7 @@
 
 namespace KK_UniformUniforms
 {
-    static class Outfits
+    internal static class Outfits
     {
         public enum Keys
         {

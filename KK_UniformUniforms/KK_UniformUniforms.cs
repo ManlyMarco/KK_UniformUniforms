@@ -1,5 +1,7 @@
-﻿using BepInEx;
-using Harmony;
+﻿using System;
+using BepInEx;
+using BepInEx.Logging;
+using HarmonyLib;
 using UnityEngine;
 using UniRx;
 
@@ -12,8 +14,15 @@ namespace KK_UniformUniforms
         public const string PluginName = "KK Uniform Uniforms";
         public const string PluginNameInternal = "KK_UniformUniforms";
         public const string Version = "1.0";
-        
-        void Start()
+
+        internal static new ManualLogSource Logger;
+
+        private void Awake()
+        {
+            Logger = base.Logger;
+        }
+
+        private void Start()
         {
             // Set color parameters
             UI.PreviewTexture = new Texture2D(65, 65)
@@ -22,7 +31,7 @@ namespace KK_UniformUniforms
             };
         }
 
-        void Update()
+        private void Update()
         {
             // Check if Scene is set to ClassRoomSelect
             if (Manager.Scene.Instance.NowSceneNames[0] == "ClassRoomSelect")

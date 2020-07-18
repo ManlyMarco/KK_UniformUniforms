@@ -1,29 +1,23 @@
-﻿using System;
-using System.Linq;
-using UnityEngine;
-using Illusion.Game;
-using UniRx;
-using Harmony;
-using Logger = BepInEx.Logger;
+﻿using UnityEngine;
 
 namespace KK_UniformUniforms
 {
-    class UI
+    internal class UI
     {
         internal static Vector2 ScrollPos { get; set; }
         internal static Texture2D PreviewTexture { get; set; }
 
         internal static bool Visible = false;
-        private static bool HSV = false;
-        private static bool GUIChanged = false;
-        private static bool Advanced = false;
+        private static bool HSV;
+        private static bool GUIChanged;
+        private static bool Advanced;
         private static bool BottomToggle = false;
 
         private static float MinHeight = 1080 - Offset;
         private static float MaxHeight = Screen.height * .92f;
         private static float TargetHeight = 0;
-        private static float HeightOffset = 0;
-        private static float HeightOffsetAdv = 0;
+        private static float HeightOffset;
+        private static float HeightOffsetAdv;
 
         private static int ToggleWidth = 57;
         private static int Offset = 165;
@@ -177,8 +171,7 @@ namespace KK_UniformUniforms
                 float[] rgb = SetGUISliderTextures(
                     Colors.Palette[Outfits.Current][Clothes.Current].r,
                     Colors.Palette[Outfits.Current][Clothes.Current].g,
-                    Colors.Palette[Outfits.Current][Clothes.Current].b,
-                    false
+                    Colors.Palette[Outfits.Current][Clothes.Current].b
                 );
                 Colors.Palette[Outfits.Current][Clothes.Current].r = rgb[0];
                 Colors.Palette[Outfits.Current][Clothes.Current].g = rgb[1];
@@ -213,8 +206,10 @@ namespace KK_UniformUniforms
 
             // Draw Buttons
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Copy")) { Colors.Copy = Colors.Palette[Outfits.Current][Clothes.Current]; };
-            if (GUILayout.Button("Paste")) { Colors.Palette[Outfits.Current][Clothes.Current] = Colors.Copy; };
+            if (GUILayout.Button("Copy")) { Colors.Copy = Colors.Palette[Outfits.Current][Clothes.Current]; }
+
+            if (GUILayout.Button("Paste")) { Colors.Palette[Outfits.Current][Clothes.Current] = Colors.Copy; }
+
             GUILayout.EndHorizontal();
             if (GUILayout.Button("Auto Pattern Colors")) Utilities.SetDarkerPatternColors();
         }
@@ -275,7 +270,7 @@ namespace KK_UniformUniforms
             GUI.skin.horizontalSlider.active.background = active;
             GUI.skin.horizontalSlider.hover.background = hover;
             GUI.skin.horizontalSlider.focused.background = focused;
-            return new float[] { x, y, z };
+            return new[] { x, y, z };
         }
 
         internal static void DrawMainGUI(int id)

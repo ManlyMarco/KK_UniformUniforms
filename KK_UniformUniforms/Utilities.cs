@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Harmony;
+using HarmonyLib;
 using UniRx;
 using Illusion.Game;
-using Logger = BepInEx.Logger;
 
 // TODO: Clean up UI class
 //  - Make window size sane
@@ -13,7 +12,7 @@ using Logger = BepInEx.Logger;
 
 namespace KK_UniformUniforms
 {
-    class Utilities
+    internal class Utilities
     {
         internal enum Apply
         {
@@ -77,11 +76,11 @@ namespace KK_UniformUniforms
             if (chaFile.coordinate[0].clothes.parts[0].id == 1 || chaFile.coordinate[0].clothes.parts[0].id == 2)
             {
                 Clothes.StrictUniform = chaFile.coordinate[0].clothes.parts[0].id;
-                Logger.Log(BepInEx.Logging.LogLevel.Message, String.Format("Setting uniform to apply to {0}.", Clothes.StrictUniform == 2 ? "Blazer" : "Sailor"));
+                KK_UniformUniforms.Logger.Log(BepInEx.Logging.LogLevel.Message, String.Format("Setting uniform to apply to {0}.", Clothes.StrictUniform == 2 ? "Blazer" : "Sailor"));
             }
             else
             {
-                Logger.Log(BepInEx.Logging.LogLevel.Message, "Current card is not wearing regulation uniform, setting uniform to Sailor/Blazer.");
+                KK_UniformUniforms.Logger.Log(BepInEx.Logging.LogLevel.Message, "Current card is not wearing regulation uniform, setting uniform to Sailor/Blazer.");
                 Clothes.StrictUniform = 0;
             }
 
@@ -289,7 +288,7 @@ namespace KK_UniformUniforms
 
             // Play sound and write message
             Utils.Sound.Play(SystemSE.ok_l);
-            Logger.Log(BepInEx.Logging.LogLevel.Message, String.Format("Successfully changed clothes for {0} characters!", appliedNo));
+            KK_UniformUniforms.Logger.Log(BepInEx.Logging.LogLevel.Message, String.Format("Successfully changed clothes for {0} characters!", appliedNo));
         }
     }
 }
