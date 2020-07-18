@@ -4,43 +4,40 @@ namespace KK_UniformUniforms
 {
     internal class UI
     {
-        internal static Vector2 ScrollPos { get; set; }
-        internal static Texture2D PreviewTexture { get; set; }
-
         internal static bool Visible = false;
+
         private static bool HSV;
         private static bool GUIChanged;
         private static bool Advanced;
-        private static bool BottomToggle = false;
 
-        private static float MinHeight = 1080 - Offset;
-        private static float MaxHeight = Screen.height * .92f;
-        private static float TargetHeight = 0;
-        private static float HeightOffset;
-        private static float HeightOffsetAdv;
+        private static readonly int ToggleWidth = 57;
+        private static readonly int Offset = 165;
+        private static readonly int AdvancedMenuHeight = 437;
+        private static readonly int Width = 170;
+        private static readonly int WidthLim = 160;
 
-        private static int ToggleWidth = 57;
-        private static int Offset = 165;
-        private static int AdvancedMenuHeight = 437;
-        private static int Width = 170;
-        private static int WidthLim = 160;
+        private static readonly int MinHeight = 1080 - Offset;
+        private static readonly int MaxHeight = (int)(Screen.height * .92f);
+        private static int HeightOffset;
+        private static int HeightOffsetAdv;
+
+        internal static Vector2 ScrollPos { get; set; }
+        internal static Texture2D PreviewTexture { get; set; }
 
         internal static Rect GetWindowRect()
         {
             // Calculate advanced window height
-            float advancedHeight = (MinHeight >= MaxHeight ? MaxHeight : MinHeight) - HeightOffset;
+            var advancedHeight = (MinHeight >= MaxHeight ? MaxHeight : MinHeight) - HeightOffset;
 
             return new Rect(
                 5, // Window x
                 5, // Window y
-
-                Advanced && advancedHeight != MinHeight ?   // If advanced color controls and not low res...
-                    Width :                                 // ...set standard width
-                    Width - 24,                             // ...adjust width for scrollbar
-
-                Advanced ?                                  // If advanced color controls...
-                    advancedHeight - HeightOffsetAdv :      // ...set height to advanced - offsets from selections
-                    MinHeight - AdvancedMenuHeight          // ...set height to minimum - difference in height to advanced menu
+                Advanced && advancedHeight != MinHeight ? // If advanced color controls and not low res...
+                    Width : // ...set standard width
+                    Width - 24, // ...adjust width for scrollbar
+                Advanced ? // If advanced color controls...
+                    advancedHeight - HeightOffsetAdv : // ...set height to advanced - offsets from selections
+                    MinHeight - AdvancedMenuHeight // ...set height to minimum - difference in height to advanced menu
             );
         }
 
@@ -93,15 +90,24 @@ namespace KK_UniformUniforms
                     GUILayout.Label("Uniform to apply");
                     GUILayout.BeginHorizontal();
                     {
-                        Clothes.StrictUniform = GUILayout.Toggle(Clothes.StrictUniform == 1, "Sailor", GUILayout.Width(ToggleWidth)) ? 1 : Clothes.StrictUniform;
-                        Clothes.StrictUniform = GUILayout.Toggle(Clothes.StrictUniform == 2, "Blazer", GUILayout.Width(ToggleWidth)) ? 2 : Clothes.StrictUniform;
+                        Clothes.StrictUniform = GUILayout.Toggle(Clothes.StrictUniform == 1, "Sailor", GUILayout.Width(ToggleWidth))
+                                ? 1
+                                : Clothes.StrictUniform;
+                        Clothes.StrictUniform = GUILayout.Toggle(Clothes.StrictUniform == 2, "Blazer", GUILayout.Width(ToggleWidth))
+                                ? 2
+                                : Clothes.StrictUniform;
                     }
                     GUILayout.EndHorizontal();
-                    Clothes.StrictUniform = GUILayout.Toggle(Clothes.StrictUniform == 0, "Sailor or Blazer") ? 0 : Clothes.StrictUniform;
+                    Clothes.StrictUniform = GUILayout.Toggle(Clothes.StrictUniform == 0, "Sailor or Blazer")
+                        ? 0
+                        : Clothes.StrictUniform;
                 }
                 GUILayout.EndVertical();
             }
-            else HeightOffset = 24 * 3 + 5;
+            else
+            {
+                HeightOffset = 24 * 3 + 5;
+            }
         }
 
         private static void DrawAdvancedSelectOutfit()
@@ -109,14 +115,25 @@ namespace KK_UniformUniforms
             GUILayout.Label("Select Outfit");
             GUILayout.BeginHorizontal();
             {
-                Outfits.Current = GUILayout.Toggle(Outfits.Current == Outfits.Keys.MainTop || Outfits.Current == Outfits.Keys.MainBottom, "School", GUILayout.Width(ToggleWidth)) ?
-                    Outfits.Keys.MainTop : Outfits.Current;
-                Outfits.Current = GUILayout.Toggle(Outfits.Current == Outfits.Keys.PETop || Outfits.Current == Outfits.Keys.PEBottom, "PE", GUILayout.Width(ToggleWidth)) ?
-                    Outfits.Keys.PETop : Outfits.Current;
+                Outfits.Current =
+                    GUILayout.Toggle(
+                        Outfits.Current == Outfits.Keys.MainTop || Outfits.Current == Outfits.Keys.MainBottom, "School",
+                        GUILayout.Width(ToggleWidth))
+                        ? Outfits.Keys.MainTop
+                        : Outfits.Current;
+                Outfits.Current =
+                    GUILayout.Toggle(Outfits.Current == Outfits.Keys.PETop || Outfits.Current == Outfits.Keys.PEBottom,
+                        "PE", GUILayout.Width(ToggleWidth))
+                        ? Outfits.Keys.PETop
+                        : Outfits.Current;
             }
             GUILayout.EndHorizontal();
-            Outfits.Current = GUILayout.Toggle(Outfits.Current == Outfits.Keys.SwimsuitTop || Outfits.Current == Outfits.Keys.SwimsuitBottom, "Swimsuit") ?
-                Outfits.Keys.SwimsuitTop : Outfits.Current;
+            Outfits.Current =
+                GUILayout.Toggle(
+                    Outfits.Current == Outfits.Keys.SwimsuitTop || Outfits.Current == Outfits.Keys.SwimsuitBottom,
+                    "Swimsuit")
+                    ? Outfits.Keys.SwimsuitTop
+                    : Outfits.Current;
         }
 
         private static void DrawAdvancedSelectColorIndex()
@@ -124,10 +141,18 @@ namespace KK_UniformUniforms
             GUILayout.Label("Select Part Color");
             GUILayout.BeginHorizontal();
             {
-                Clothes.Current = GUILayout.Toggle(Clothes.Current == 0 || Clothes.Current == 4, "1") ? 0 : Clothes.Current;
-                Clothes.Current = GUILayout.Toggle(Clothes.Current == 1 || Clothes.Current == 5, "2") ? 1 : Clothes.Current;
-                Clothes.Current = GUILayout.Toggle(Clothes.Current == 2 || Clothes.Current == 6, "3") ? 2 : Clothes.Current;
-                Clothes.Current = GUILayout.Toggle(Clothes.Current == 3 || Clothes.Current == 7, "4") ? 3 : Clothes.Current;
+                Clothes.Current = GUILayout.Toggle(Clothes.Current == 0 || Clothes.Current == 4, "1")
+                    ? 0
+                    : Clothes.Current;
+                Clothes.Current = GUILayout.Toggle(Clothes.Current == 1 || Clothes.Current == 5, "2")
+                    ? 1
+                    : Clothes.Current;
+                Clothes.Current = GUILayout.Toggle(Clothes.Current == 2 || Clothes.Current == 6, "3")
+                    ? 2
+                    : Clothes.Current;
+                Clothes.Current = GUILayout.Toggle(Clothes.Current == 3 || Clothes.Current == 7, "4")
+                    ? 3
+                    : Clothes.Current;
             }
             GUILayout.EndHorizontal();
         }
@@ -143,7 +168,10 @@ namespace KK_UniformUniforms
                 GUILayout.EndHorizontal();
                 if (Clothes.BottomFlag) Outfits.Current += 1;
             }
-            else HeightOffsetAdv = 22;
+            else
+            {
+                HeightOffsetAdv = 22;
+            }
         }
 
         private static void DrawAdvancedSelectPattern()
@@ -162,13 +190,13 @@ namespace KK_UniformUniforms
             // Check if sliders are HSV or RGB and draw sliders
             if (HSV)
             {
-                Color.RGBToHSV(Colors.Palette[Outfits.Current][Clothes.Current], out float H, out float S, out float V);
-                float[] hsv = SetGUISliderTextures(H, S, V, true);
+                Color.RGBToHSV(Colors.Palette[Outfits.Current][Clothes.Current], out var h, out var s, out var v);
+                var hsv = SetGUISliderTextures(h, s, v, true);
                 Colors.Palette[Outfits.Current][Clothes.Current] = Color.HSVToRGB(hsv[0], hsv[1], hsv[2]);
             }
             else
             {
-                float[] rgb = SetGUISliderTextures(
+                var rgb = SetGUISliderTextures(
                     Colors.Palette[Outfits.Current][Clothes.Current].r,
                     Colors.Palette[Outfits.Current][Clothes.Current].g,
                     Colors.Palette[Outfits.Current][Clothes.Current].b
@@ -177,14 +205,15 @@ namespace KK_UniformUniforms
                 Colors.Palette[Outfits.Current][Clothes.Current].g = rgb[1];
                 Colors.Palette[Outfits.Current][Clothes.Current].b = rgb[2];
             }
+
             Colors.Palette[Outfits.Current][Clothes.Current].a = 1;
 
             // HSV / RGB Selector
-            if (GUILayout.Button(HSV ? "To RGB" : "To HSV")) { HSV = !HSV; };
+            if (GUILayout.Button(HSV ? "To RGB" : "To HSV")) HSV = !HSV;
 
             // Refresh Color Preview Texture
-            for (int x = 1; x <= 65; x++)
-                for (int y = 1; y <= 65; y++)
+            for (var x = 1; x <= 65; x++)
+                for (var y = 1; y <= 65; y++)
                     PreviewTexture.SetPixel(x, y, Colors.Palette[Outfits.Current][Clothes.Current]);
             PreviewTexture.Apply();
 
@@ -206,9 +235,9 @@ namespace KK_UniformUniforms
 
             // Draw Buttons
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Copy")) { Colors.Copy = Colors.Palette[Outfits.Current][Clothes.Current]; }
+            if (GUILayout.Button("Copy")) Colors.Copy = Colors.Palette[Outfits.Current][Clothes.Current];
 
-            if (GUILayout.Button("Paste")) { Colors.Palette[Outfits.Current][Clothes.Current] = Colors.Copy; }
+            if (GUILayout.Button("Paste")) Colors.Palette[Outfits.Current][Clothes.Current] = Colors.Copy;
 
             GUILayout.EndHorizontal();
             if (GUILayout.Button("Auto Pattern Colors")) Utilities.SetDarkerPatternColors();
@@ -217,15 +246,15 @@ namespace KK_UniformUniforms
         private static float[] SetGUISliderTextures(float x, float y, float z, bool hsv = false)
         {
             // Save standard textures for restoring later
-            Texture2D normal = GUI.skin.horizontalSlider.normal.background;
-            Texture2D active = GUI.skin.horizontalSlider.active.background;
-            Texture2D hover = GUI.skin.horizontalSlider.hover.background;
-            Texture2D focused = GUI.skin.horizontalSlider.focused.background;
+            var normal = GUI.skin.horizontalSlider.normal.background;
+            var active = GUI.skin.horizontalSlider.active.background;
+            var hover = GUI.skin.horizontalSlider.hover.background;
+            var focused = GUI.skin.horizontalSlider.focused.background;
 
             // Make slider textures for each color dimension
-            Texture2D xTex = new Texture2D(1, 1);
-            Texture2D yTex = new Texture2D(1, 1);
-            Texture2D zTex = new Texture2D(1, 1);
+            var xTex = new Texture2D(1, 1);
+            var yTex = new Texture2D(1, 1);
+            var zTex = new Texture2D(1, 1);
 
             // Set colors for each slider
             if (hsv)
@@ -241,7 +270,9 @@ namespace KK_UniformUniforms
                 zTex.SetPixel(1, 1, new Color(0, 0, z));
             }
 
-            xTex.Apply(); yTex.Apply(); zTex.Apply();
+            xTex.Apply();
+            yTex.Apply();
+            zTex.Apply();
 
             // Draw slider colors
             GUILayout.Label(hsv ? "Hue" : "Red");
@@ -278,7 +309,8 @@ namespace KK_UniformUniforms
             GUILayout.BeginVertical();
             {
                 GUILayout.Space(20);
-                ScrollPos = GUILayout.BeginScrollView(ScrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.ExpandHeight(true), GUILayout.MaxHeight(MaxHeight - 22));
+                ScrollPos = GUILayout.BeginScrollView(ScrollPos, GUIStyle.none, GUI.skin.verticalScrollbar,
+                    GUILayout.ExpandHeight(true), GUILayout.MaxHeight(MaxHeight - 22));
                 {
                     GUILayout.BeginHorizontal(GUILayout.MaxWidth(WidthLim));
                     {

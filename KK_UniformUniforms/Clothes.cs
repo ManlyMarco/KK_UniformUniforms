@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KK_UniformUniforms
+﻿namespace KK_UniformUniforms
 {
-    static class Clothes
+    internal static class Clothes
     {
         public static int Top = 0;
         public static int Bottom = 1;

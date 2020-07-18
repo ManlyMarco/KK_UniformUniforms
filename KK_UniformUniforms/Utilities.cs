@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using ActionGame;
+using BepInEx.Logging;
 using HarmonyLib;
-using UniRx;
 using Illusion.Game;
+using Manager;
+using UniRx;
+using UnityEngine;
+using Random = System.Random;
 
 // TODO: Clean up UI class
 //  - Make window size sane
@@ -14,30 +18,23 @@ namespace KK_UniformUniforms
 {
     internal class Utilities
     {
-        internal enum Apply
-        {
-            All, Class, Card
-        }
-
         internal static List<SaveData.CharaData> CharaList = new List<SaveData.CharaData>();
-        internal static ActionGame.PreviewClassData CurrClassData { get; set; }
-        internal static ActionGame.ClassRoomSelectScene ClassroomScene { get; set; }
 
-        public static bool IsInClassRoom { get; private set; }
-
-        internal static System.Random Rand = new System.Random();
+        internal static Random Rand = new Random();
+        internal static PreviewClassData CurrClassData { get; set; }
+        internal static ClassRoomSelectScene ClassroomScene { get; set; }
 
         public static Color GetSlightlyDarkerColor(Color incolor)
         {
-            Color.RGBToHSV(incolor, out float h, out float s, out float v);
+            Color.RGBToHSV(incolor, out var h, out var s, out var v);
             v = v > 0.08f ? v - 0.08f : 0;
             return Color.HSVToRGB(h, s, v);
         }
 
         internal static void SetDarkerPatternColors()
         {
-            foreach (Outfits.Keys key in (Outfits.Keys[])Enum.GetValues(typeof(Outfits.Keys)))
-                for (int j = 0; j < 4; j++)
+            foreach (var key in (Outfits.Keys[])Enum.GetValues(typeof(Outfits.Keys)))
+                for (var j = 0; j < 4; j++)
                     Colors.Palette[key][j + 4] = GetSlightlyDarkerColor(Colors.Palette[key][j]);
         }
 
@@ -52,46 +49,42 @@ namespace KK_UniformUniforms
             ClearCharList();
 
             // Load current data from heroineList and new characters from charaList
-            List<SaveData.Heroine> heroineList = Singleton<Manager.Game>.Instance.HeroineList;
-            List<SaveData.CharaData> classList = Traverse.Create(ClassroomScene.classRoomList).Field("charaList").GetValue<List<SaveData.CharaData>>();
-            foreach (SaveData.Heroine heroine in heroineList)
-            {
-                CharaList.Add(heroine);
-            }
-            for (int i = heroineList.Count; i < classList.Count; i++)
-            {
+            var heroineList = Singleton<Game>.Instance.HeroineList;
+            var classList = Traverse.Create(ClassroomScene.classRoomList).Field("charaList")
+                .GetValue<List<SaveData.CharaData>>();
+            foreach (var heroine in heroineList) CharaList.Add(heroine);
+            for (var i = heroineList.Count; i < classList.Count; i++)
                 if (classList[i].GetType() != typeof(SaveData.Player))
-                {
                     CharaList.Add(classList[i]);
-                }
-            }
         }
 
         internal static void LoadColorsFromCharacter()
         {
             if (CurrClassData.data == null) return;
-            ChaFileControl chaFile = CurrClassData.data.charFile;
+            var chaFile = CurrClassData.data.charFile;
 
             // Load strict uniforms if character is wearing uniform
             if (chaFile.coordinate[0].clothes.parts[0].id == 1 || chaFile.coordinate[0].clothes.parts[0].id == 2)
             {
                 Clothes.StrictUniform = chaFile.coordinate[0].clothes.parts[0].id;
-                KK_UniformUniforms.Logger.Log(BepInEx.Logging.LogLevel.Message, String.Format("Setting uniform to apply to {0}.", Clothes.StrictUniform == 2 ? "Blazer" : "Sailor"));
+                KK_UniformUniforms.Logger.Log(LogLevel.Message,
+                    $"Setting uniform to apply to {(Clothes.StrictUniform == 2 ? "Blazer" : "Sailor")}.");
             }
             else
             {
-                KK_UniformUniforms.Logger.Log(BepInEx.Logging.LogLevel.Message, "Current card is not wearing regulation uniform, setting uniform to Sailor/Blazer.");
+                KK_UniformUniforms.Logger.Log(LogLevel.Message,
+                    "Current card is not wearing regulation uniform, setting uniform to Sailor/Blazer.");
                 Clothes.StrictUniform = 0;
             }
 
             // Get list of outfits to change
-            List<int> outfitsToChange = Outfits.GetOutfitsToChange();
+            var outfitsToChange = Outfits.GetOutfitsToChange();
 
             // Load colors from outfits
-            foreach (int outfit in outfitsToChange)
+            foreach (var outfit in outfitsToChange)
             {
-                ChaFileClothes.PartsInfo[] currParts = chaFile.coordinate[outfit].clothes.parts;
-                for (int i = 0; i < 4; i++)
+                var currParts = chaFile.coordinate[outfit].clothes.parts;
+                for (var i = 0; i < 4; i++)
                 {
                     Outfits.Keys key;
                     int clothesindex;
@@ -111,11 +104,13 @@ namespace KK_UniformUniforms
                         key = Outfits.Keys.SwimsuitTop;
                         clothesindex = Clothes.Bra;
                     }
+
                     if (Colors.TopFlag)
                     {
                         Colors.Palette[key][i] = currParts[clothesindex].colorInfo[i].baseColor;
                         Colors.Palette[key][i + 4] = currParts[clothesindex].colorInfo[i].patternColor;
                     }
+
                     if (Colors.BottomFlag)
                     {
                         Colors.Palette[key + 1][i] = currParts[clothesindex + 1].colorInfo[i].baseColor;
@@ -123,20 +118,21 @@ namespace KK_UniformUniforms
                     }
                 }
             }
+
             Utils.Sound.Play(SystemSE.sel);
         }
 
         private static void SetRandomClothes(ChaFileControl chaFile)
         {
             // Get list of outfits to change
-            List<int> outfitsToChange = Outfits.GetOutfitsToChange();
+            var outfitsToChange = Outfits.GetOutfitsToChange();
 
             // Apply clothes to outfits
-            foreach (int outfit in outfitsToChange)
+            foreach (var outfit in outfitsToChange)
             {
-                ChaFileClothes.PartsInfo[] currParts = chaFile.coordinate[outfit].clothes.parts;
-                int[] currSubParts = chaFile.coordinate[outfit].clothes.subPartsId;
-                bool topChanged = false;
+                var currParts = chaFile.coordinate[outfit].clothes.parts;
+                var currSubParts = chaFile.coordinate[outfit].clothes.subPartsId;
+                var topChanged = false;
 
                 currParts[Clothes.Top].emblemeId = Outfits.EmblemFlag ? Outfits.EmblemID : currParts[Clothes.Top].emblemeId;
 
@@ -164,7 +160,7 @@ namespace KK_UniformUniforms
                 {
                     if (Clothes.TopFlag && !tops.Contains(currParts[Clothes.Top].id))
                     {
-                        currParts[Clothes.Top].id = tops[Utilities.Rand.Next(tops.Count)];
+                        currParts[Clothes.Top].id = tops[Rand.Next(tops.Count)];
                         topChanged = true;
                     }
                 }
@@ -176,15 +172,11 @@ namespace KK_UniformUniforms
 
                 // Change Bottoms
                 if (Clothes.BottomFlag && !bottoms.Contains(currParts[Clothes.Bottom].id))
-                {
-                    currParts[Clothes.Bottom].id = bottoms[Utilities.Rand.Next(bottoms.Count)];
-                }
+                    currParts[Clothes.Bottom].id = bottoms[Rand.Next(bottoms.Count)];
 
                 // Change Swimsuit
                 if (outfit == Outfits.Swimsuit)
-                {
-                    currParts[Clothes.Bra].id = Default.SwimsuitBras[Utilities.Rand.Next(Default.SwimsuitBras.Count)];
-                }
+                    currParts[Clothes.Bra].id = Default.SwimsuitBras[Rand.Next(Default.SwimsuitBras.Count)];
 
                 List<int> subunder;
                 List<int> subover;
@@ -222,9 +214,9 @@ namespace KK_UniformUniforms
 
                 if (topChanged)
                 {
-                    currSubParts[Clothes.Subshirt] = subunder[Utilities.Rand.Next(subunder.Count)];
-                    currSubParts[Clothes.Subjacketcollar] = subover[Utilities.Rand.Next(subover.Count)];
-                    currSubParts[Clothes.Subdecoration] = subdeco[Utilities.Rand.Next(subdeco.Count)];
+                    currSubParts[Clothes.Subshirt] = subunder[Rand.Next(subunder.Count)];
+                    currSubParts[Clothes.Subjacketcollar] = subover[Rand.Next(subover.Count)];
+                    currSubParts[Clothes.Subdecoration] = subdeco[Rand.Next(subdeco.Count)];
                 }
             }
 
@@ -236,25 +228,29 @@ namespace KK_UniformUniforms
         internal static void ApplySettings(Apply apply)
         {
             // Refresh character list
-            Utilities.LoadCharList();
+            LoadCharList();
 
             // Set counter for number of cards applied to
-            int appliedNo = 0;
+            var appliedNo = 0;
 
             // Get currently viewed ClassList
-            int currSchoolClass = Traverse.Create(Utilities.ClassroomScene.classRoomList).Field("_page").GetValue<IntReactiveProperty>().Value;
+            var currSchoolClass = Traverse.Create(ClassroomScene.classRoomList).Field("_page").GetValue<IntReactiveProperty>().Value;
 
             // If character is Minase Ai, add her to players class
-            Utilities.CharaList.Find(x => ((SaveData.Heroine)x).fixCharaID == -10).schoolClass = 1;
+            CharaList.Find(x => ((SaveData.Heroine)x).fixCharaID == -10).schoolClass = 1;
 
-            foreach (SaveData.CharaData chaData in apply == Apply.Class ? Utilities.CharaList.Where(c => c.schoolClass == currSchoolClass) : Utilities.CharaList)
+            foreach (var chaData in apply == Apply.Class
+                ? CharaList.Where(c => c.schoolClass == currSchoolClass)
+                : CharaList)
             {
-                if (apply == Apply.Card && CurrClassData != null && chaData.schoolClassIndex != CurrClassData.data.schoolClassIndex) continue;
+                if (apply == Apply.Card && CurrClassData != null &&
+                    chaData.schoolClassIndex != CurrClassData.data.schoolClassIndex) continue;
                 if (!((SaveData.Heroine)chaData).isTeacher)
                 {
                     if (currSchoolClass == 4)
                     {
                         // Set cards for Fixed Characters
+                        System.Diagnostics.Debug.Assert(CurrClassData != null, nameof(CurrClassData) + " != null");
                         SetRandomClothes(CurrClassData.data.charFile);
                         appliedNo++;
                         if (apply == Apply.Card) break;
@@ -265,6 +261,7 @@ namespace KK_UniformUniforms
                         appliedNo++;
                     }
                 }
+
                 if (chaData.chaCtrl != null) chaData.chaCtrl.chaFile.coordinate = chaData.charFile.coordinate;
             }
 
@@ -272,23 +269,26 @@ namespace KK_UniformUniforms
             CharaList.Find(x => ((SaveData.Heroine)x).fixCharaID == -10).schoolClass = -1;
 
             // Apply colors to player
-            SaveData.Player player = Singleton<Manager.Game>.Instance.Player;
+            var player = Singleton<Game>.Instance.Player;
             if (apply != Apply.Card)
-            {
                 if (apply == Apply.All || currSchoolClass == player.schoolClass)
                 {
                     Colors.SetColors(player.charFile);
                     appliedNo++;
-                    if (player.chaCtrl != null)
-                    {
-                        player.chaCtrl.chaFile.coordinate = player.charFile.coordinate;
-                    }
+                    if (player.chaCtrl != null) player.chaCtrl.chaFile.coordinate = player.charFile.coordinate;
                 }
-            }
 
             // Play sound and write message
             Utils.Sound.Play(SystemSE.ok_l);
-            KK_UniformUniforms.Logger.Log(BepInEx.Logging.LogLevel.Message, String.Format("Successfully changed clothes for {0} characters!", appliedNo));
+            KK_UniformUniforms.Logger.Log(LogLevel.Message,
+                $"Successfully changed clothes for {appliedNo} characters!");
+        }
+
+        internal enum Apply
+        {
+            All,
+            Class,
+            Card
         }
     }
 }

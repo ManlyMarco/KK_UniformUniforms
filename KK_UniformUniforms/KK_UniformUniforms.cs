@@ -1,9 +1,10 @@
-﻿using System;
+﻿using ActionGame;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using UnityEngine;
+using Manager;
 using UniRx;
+using UnityEngine;
 
 namespace KK_UniformUniforms
 {
@@ -12,7 +13,6 @@ namespace KK_UniformUniforms
     {
         public const string GUID = "com.cptgrey.bepinex.uniform";
         public const string PluginName = "KK Uniform Uniforms";
-        public const string PluginNameInternal = "KK_UniformUniforms";
         public const string Version = "1.0";
 
         internal static new ManualLogSource Logger;
@@ -34,26 +34,30 @@ namespace KK_UniformUniforms
         private void Update()
         {
             // Check if Scene is set to ClassRoomSelect
-            if (Manager.Scene.Instance.NowSceneNames[0] == "ClassRoomSelect")
+            if (Scene.Instance.NowSceneNames[0] == "ClassRoomSelect")
             {
                 // Check if classroom scene is currently stored
-                if (Utilities.ClassroomScene == null) Utilities.ClassroomScene = Singleton<ActionGame.ClassRoomSelectScene>.Instance;
+                if (Utilities.ClassroomScene == null)
+                    Utilities.ClassroomScene = Singleton<ClassRoomSelectScene>.Instance;
 
                 // Check if scene is visible, i.e. not currently loading a character
                 if (Utilities.ClassroomScene != null && Utilities.ClassroomScene.classRoomList.isVisible)
                 {
                     // Get PreviewClassData instance
-                    Traverse enterPreview = Traverse.Create(Utilities.ClassroomScene.classRoomList).Field("enterPreview");
+                    var enterPreview = Traverse.Create(Utilities.ClassroomScene.classRoomList).Field("enterPreview");
                     if (enterPreview.FieldExists())
-                        Utilities.CurrClassData = enterPreview.GetValue<ReactiveProperty<ActionGame.PreviewClassData>>().Value;
+                        Utilities.CurrClassData = enterPreview.GetValue<ReactiveProperty<PreviewClassData>>().Value;
 
                     // Get current school emblem
-                    Outfits.EmblemID = Singleton<Manager.Game>.Instance.saveData.emblemID;
+                    Outfits.EmblemID = Singleton<Game>.Instance.saveData.emblemID;
 
                     // Set GUI visible flag
                     UI.Visible = true;
                 }
-                else UI.Visible = false;
+                else
+                {
+                    UI.Visible = false;
+                }
             }
             else
             {
@@ -65,10 +69,7 @@ namespace KK_UniformUniforms
 
         private void OnGUI()
         {
-            if (UI.Visible)
-            {
-                GUILayout.Window(94761634, UI.GetWindowRect(), UI.DrawMainGUI, "Set School Uniforms");
-            }
+            if (UI.Visible) GUILayout.Window(94761634, UI.GetWindowRect(), UI.DrawMainGUI, "Set School Uniforms");
         }
     }
 }

@@ -6,7 +6,12 @@ namespace KK_UniformUniforms
     {
         public enum Keys
         {
-            MainTop, MainBottom, PETop, PEBottom, SwimsuitTop, SwimsuitBottom
+            MainTop,
+            MainBottom,
+            PETop,
+            PEBottom,
+            SwimsuitTop,
+            SwimsuitBottom
         }
 
         internal static int School = 0;
@@ -30,7 +35,7 @@ namespace KK_UniformUniforms
         internal static List<int> GetOutfitsToChange()
         {
             // Create list
-            List<int> outfitsToChange = new List<int>();
+            var outfitsToChange = new List<int>();
 
             // Add items to list based on selected values
             if (SchoolFlag) outfitsToChange.Add(School);
