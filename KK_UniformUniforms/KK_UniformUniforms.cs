@@ -15,7 +15,7 @@ namespace KK_UniformUniforms
     {
         public const string GUID = "com.cptgrey.bepinex.uniform";
         public const string PluginName = "KK Uniform Uniforms";
-        public const string Version = "1.0";
+        public const string Version = "1.1";
 
         internal static new ManualLogSource Logger;
         
