@@ -58,7 +58,7 @@ namespace KK_UniformUniforms
                     CharaList.Add(classList[i]);
         }
 
-        internal static void LoadColorsFromCharacter()
+        internal static void LoadColorsFromCharacter(bool showMessages = true)
         {
             if (CurrClassData.data == null) return;
             var chaFile = CurrClassData.data.charFile;
@@ -67,14 +67,16 @@ namespace KK_UniformUniforms
             if (chaFile.coordinate[0].clothes.parts[0].id == 1 || chaFile.coordinate[0].clothes.parts[0].id == 2)
             {
                 Clothes.StrictUniform = chaFile.coordinate[0].clothes.parts[0].id;
-                KK_UniformUniforms.Logger.Log(LogLevel.Message,
-                    $"Setting uniform to apply to {(Clothes.StrictUniform == 2 ? "Blazer" : "Sailor")}.");
+                if (showMessages)
+                    KK_UniformUniforms.Logger.Log(LogLevel.Message,
+                        $"Setting uniform to apply to {(Clothes.StrictUniform == 2 ? "Blazer" : "Sailor")}.");
             }
             else
             {
-                KK_UniformUniforms.Logger.Log(LogLevel.Message,
-                    "Current card is not wearing regulation uniform, setting uniform to Sailor/Blazer.");
                 Clothes.StrictUniform = 0;
+                if (showMessages)
+                    KK_UniformUniforms.Logger.Log(LogLevel.Message,
+                        "Current card is not wearing regulation uniform, setting uniform to Sailor/Blazer.");
             }
 
             // Get list of outfits to change
@@ -119,7 +121,8 @@ namespace KK_UniformUniforms
                 }
             }
 
-            Utils.Sound.Play(SystemSE.sel);
+            if (showMessages)
+                Utils.Sound.Play(SystemSE.sel);
         }
 
         private static void SetRandomClothes(ChaFileControl chaFile)

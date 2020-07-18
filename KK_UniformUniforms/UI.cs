@@ -1,14 +1,14 @@
-﻿using UnityEngine;
+﻿using BepInEx;
+using UnityEngine;
 
 namespace KK_UniformUniforms
 {
     internal class UI
     {
-        internal static bool Visible = false;
-
         private static bool HSV;
         private static bool GUIChanged;
-        private static bool Advanced;
+        private static bool EasyMode = true;
+        private static bool AdvancedMode;
 
         private static readonly int ToggleWidth = 57;
         private static readonly int Offset = 165;
@@ -24,18 +24,22 @@ namespace KK_UniformUniforms
         internal static Vector2 ScrollPos { get; set; }
         internal static Texture2D PreviewTexture { get; set; }
 
+
         internal static Rect GetWindowRect()
         {
+            if (EasyMode)
+                return new Rect(5, (int)(Screen.height / 9), Width - 24, 170);
+
             // Calculate advanced window height
             var advancedHeight = (MinHeight >= MaxHeight ? MaxHeight : MinHeight) - HeightOffset;
 
             return new Rect(
                 5, // Window x
                 5, // Window y
-                Advanced && advancedHeight != MinHeight ? // If advanced color controls and not low res...
+                AdvancedMode && advancedHeight != MinHeight ? // If advanced color controls and not low res...
                     Width : // ...set standard width
                     Width - 24, // ...adjust width for scrollbar
-                Advanced ? // If advanced color controls...
+                AdvancedMode ? // If advanced color controls...
                     advancedHeight - HeightOffsetAdv : // ...set height to advanced - offsets from selections
                     MinHeight - AdvancedMenuHeight // ...set height to minimum - difference in height to advanced menu
             );
@@ -304,11 +308,12 @@ namespace KK_UniformUniforms
             return new[] { x, y, z };
         }
 
-        internal static void DrawMainGUI(int id)
+        private static void DrawMainGUI(int id)
         {
             GUILayout.BeginVertical();
             {
                 GUILayout.Space(20);
+
                 ScrollPos = GUILayout.BeginScrollView(ScrollPos, GUIStyle.none, GUI.skin.verticalScrollbar,
                     GUILayout.ExpandHeight(true), GUILayout.MaxHeight(MaxHeight - 22));
                 {
@@ -317,25 +322,72 @@ namespace KK_UniformUniforms
                         GUILayout.Space(5);
                         GUILayout.BeginVertical();
                         {
-                            if (GUILayout.Button("Load From Selected")) Utilities.LoadColorsFromCharacter();
+                            if (EasyMode)
+                            {
+                                var maxWidth = GUILayout.ExpandWidth(true); //GUILayout.MaxWidth(WidthLim - 5);
 
-                            Advanced = GUILayout.Toggle(Advanced, "Advanced Controls");
-                            if (Advanced) AdvancedColor();
+                                if (Utilities.CurrClassData?.data?.charFile == null)
+                                {
+                                    GUILayout.Label(
+                                        "This tool can change uniforms of all characters to the same style. Select a character to copy uniforms from.",
+                                        maxWidth);
 
-                            DrawOutfitsToChange();
+                                    //GUI.enabled = false;
+                                }
+                                else
+                                {
+                                    GUILayout.Label("Copy uniforms from the selected character to all characters in:",
+                                        maxWidth);
 
-                            DrawPartsToChange();
+                                    if (GUILayout.Button("This Class"))
+                                    {
+                                        Utilities.LoadColorsFromCharacter(false);
+                                        ThreadingHelper.Instance.StartSyncInvoke(() =>
+                                        {
+                                            Clothes.StrictUniform = 0;
+                                            // This needs to happen next frame after loading data
+                                            Utilities.ApplySettings(Utilities.Apply.Class);
+                                        });
+                                    }
 
-                            DrawColorsToChange();
+                                    if (GUILayout.Button("All Classes"))
+                                    {
+                                        Utilities.LoadColorsFromCharacter(false);
+                                        ThreadingHelper.Instance.StartSyncInvoke(() =>
+                                        {
+                                            Clothes.StrictUniform = 0;
+                                            // This needs to happen next frame after loading data
+                                            Utilities.ApplySettings(Utilities.Apply.All);
+                                        });
+                                    }
+                                }
 
-                            DrawUniformToApply();
+                                GUILayout.Space(5);
+                                if (GUILayout.Button("Advanced mode"))
+                                    EasyMode = false;
+                            }
+                            else
+                            {
+                                if (GUILayout.Button("Load From Selected")) Utilities.LoadColorsFromCharacter();
 
-                            Outfits.EmblemFlag = GUILayout.Toggle(Outfits.EmblemFlag, "Change Emblem");
+                                AdvancedMode = GUILayout.Toggle(AdvancedMode, "Advanced Controls");
+                                if (AdvancedMode) AdvancedColor();
 
-                            if (!GUIChanged) GUI.enabled = false;
-                            if (GUILayout.Button("Apply to Selected")) Utilities.ApplySettings(Utilities.Apply.Card);
-                            if (GUILayout.Button("Apply to Class")) Utilities.ApplySettings(Utilities.Apply.Class);
-                            if (GUILayout.Button("Apply to All")) Utilities.ApplySettings(Utilities.Apply.All);
+                                DrawOutfitsToChange();
+
+                                DrawPartsToChange();
+
+                                DrawColorsToChange();
+
+                                DrawUniformToApply();
+
+                                Outfits.EmblemFlag = GUILayout.Toggle(Outfits.EmblemFlag, "Change Emblem");
+
+                                if (!GUIChanged) GUI.enabled = false;
+                                if (GUILayout.Button("Apply to Selected")) Utilities.ApplySettings(Utilities.Apply.Card);
+                                if (GUILayout.Button("Apply to Class")) Utilities.ApplySettings(Utilities.Apply.Class);
+                                if (GUILayout.Button("Apply to All")) Utilities.ApplySettings(Utilities.Apply.All);
+                            }
                         }
                         GUILayout.EndVertical();
                         GUILayout.Space(24);
@@ -345,6 +397,11 @@ namespace KK_UniformUniforms
                 GUILayout.EndScrollView();
             }
             if (GUI.changed) GUIChanged = true;
+        }
+
+        public static void DrawInterface()
+        {
+            GUILayout.Window(9476, GetWindowRect(), DrawMainGUI, "Set School Uniforms");
         }
     }
 }

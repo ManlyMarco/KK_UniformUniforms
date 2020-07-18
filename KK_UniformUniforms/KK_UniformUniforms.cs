@@ -5,6 +5,8 @@ using HarmonyLib;
 using Manager;
 using UniRx;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Scene = Manager.Scene;
 
 namespace KK_UniformUniforms
 {
@@ -16,19 +18,29 @@ namespace KK_UniformUniforms
         public const string Version = "1.0";
 
         internal static new ManualLogSource Logger;
-
-        private void Awake()
-        {
-            Logger = base.Logger;
-        }
+        
+        private static bool Visible;
 
         private void Start()
         {
+            Logger = base.Logger;
+
             // Set color parameters
             UI.PreviewTexture = new Texture2D(65, 65)
             {
                 wrapMode = TextureWrapMode.Repeat
             };
+
+            // Only run when inside the class roster scene to save perf
+            SceneManager.sceneLoaded += (arg0, arg1) =>
+            {
+                if (arg0.name == "ClassRoomSelect") enabled = true;
+            };
+            SceneManager.sceneUnloaded += arg0 =>
+            {
+                if (arg0.name == "ClassRoomSelect") enabled = false;
+            };
+            enabled = false;
         }
 
         private void Update()
@@ -52,24 +64,25 @@ namespace KK_UniformUniforms
                     Outfits.EmblemID = Singleton<Game>.Instance.saveData.emblemID;
 
                     // Set GUI visible flag
-                    UI.Visible = true;
+                    Visible = true;
                 }
                 else
                 {
-                    UI.Visible = false;
+                    Visible = false;
                 }
             }
             else
             {
                 // Reset stored classroom scene and disable gui
                 Utilities.ClassroomScene = null;
-                UI.Visible = false;
+                Visible = false;
             }
         }
 
         private void OnGUI()
         {
-            if (UI.Visible) GUILayout.Window(94761634, UI.GetWindowRect(), UI.DrawMainGUI, "Set School Uniforms");
+            if (Visible)
+                UI.DrawInterface();
         }
     }
 }
